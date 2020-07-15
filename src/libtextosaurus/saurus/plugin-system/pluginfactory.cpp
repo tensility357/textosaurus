@@ -2,11 +2,14 @@
 
 #include "saurus/plugin-system/pluginfactory.h"
 
+#include "definitions/definitions.h"
 #include "saurus/gui/sidebars/findresultssidebar.h"
 #include "saurus/gui/sidebars/outputsidebar.h"
 #include "saurus/miscellaneous/application.h"
 #include "saurus/miscellaneous/textapplication.h"
 #include "saurus/miscellaneous/textapplicationsettings.h"
+#include "saurus/plugin-system/charactermap/charactermapplugin.h"
+#include "saurus/plugin-system/clipboard/clipboardplugin.h"
 #include "saurus/plugin-system/filesystem/filesystemplugin.h"
 #include "saurus/plugin-system/macros/macrosplugin.h"
 #include "saurus/plugin-system/markdown/markdownplugin.h"
@@ -20,27 +23,40 @@ PluginFactory::PluginFactory(QObject* parent) : QObject(parent) {}
 
 void PluginFactory::loadPlugins(TextApplication* text_app) {
   // Some hardcoded "plugins".
-  m_plugins << new MarkdownPlugin(this) << new FilesystemPlugin(this) << new MacrosPlugin(this);
+  m_plugins << new MarkdownPlugin(this) << new FilesystemPlugin(this)
+            << new MacrosPlugin(this) << new CharacterMapPlugin(this)
+            << new ClipboardPlugin(this);
 
   const QString plugins_path = pluginsLibPath();
+  const auto backup_current_dir = QDir::currentPath();
 
-  for (const QFileInfo& plugin_lib_file : QDir(plugins_path).entryInfoList({QSL("libtextosaurus-*") + pluginSuffix()})) {
-    if (QLibrary::isLibrary(plugin_lib_file.absoluteFilePath())) {
-      m_plugins << PluginState(plugin_lib_file.absoluteFilePath());
+  for (const QFileInfo& plugin_subdir : QDir(plugins_path).entryInfoList(QDir::Filter::Dirs)) {
+    for (const QFileInfo& plugin_lib_file :
+         QDir(plugin_subdir.absoluteFilePath()).entryInfoList({QSL("libtextosaurus-*") + pluginSuffix()})) {
+      // Add plugin's base folder to library search path and
+      // temporarily switch application's working directory.
+      qApp->addLibraryPath(plugin_subdir.absoluteFilePath());
+      QDir::setCurrent(plugin_subdir.absoluteFilePath());
+
+      if (QLibrary::isLibrary(plugin_lib_file.absoluteFilePath())) {
+        m_plugins << PluginState(plugin_lib_file.absoluteFilePath());
+      }
     }
   }
+
+  QDir::setCurrent(backup_current_dir);
 
   for (PluginState& plugin_state : m_plugins) {
     auto plugin = plugin_state.plugin();
 
     if (plugin == nullptr) {
-      qCritical().noquote().nospace() << QSL("Cannot hook plugin '")
-                                      << plugin_state.pluginLibraryFile()
-                                      << QSL("' into application.");
+      qCriticalNN << QSL("Cannot hook plugin '") << plugin_state.pluginLibraryFile() << QSL("' into application.");
       continue;
     }
 
-    plugin->start(qApp->mainFormWidget(), text_app, qApp->settings(), qApp->icons(), qApp->web());
+    plugin->start(plugin_state.pluginLibraryFile(), qApp->mainFormWidget(),
+                  text_app, qApp->settings(),
+                  qApp->icons(), qApp->web());
 
     auto plugin_sidebars = plugin->sidebars();
 
@@ -70,7 +86,11 @@ QString PluginFactory::pluginSuffix() const {
 
 QString PluginFactory::pluginsLibPath() const {
 #if defined(Q_OS_LINUX)
-  return qApp->applicationDirPath() + QDir::separator() + QL1S("..") + QDir::separator() + QL1S("lib");
+  return qApp->applicationDirPath() + QDir::separator() +
+          QL1S("..") + QDir::separator() +
+          QL1S("lib") + QDir::separator() +
+          QL1S(APP_LOW_NAME) + QDir::separator() +
+          QL1S("plugins");
 #else
   return qApp->applicationDirPath() + QDir::separator() + QL1S("plugins");
 #endif
@@ -163,9 +183,7 @@ PluginState::PluginState(const QString& library_file) {
     m_isLoaded = true;
     m_lastError = QString();
 
-    qDebug().noquote().nospace() << QSL("Successfully loaded plugin '")
-                                 << m_pluginLibraryFile
-                                 << QSL("%s'.");
+    qDebugNN << QSL("Successfully loaded plugin '") << m_pluginLibraryFile << QSL("%s'.");
   }
   else {
     m_plugin = nullptr;
@@ -174,11 +192,7 @@ PluginState::PluginState(const QString& library_file) {
 
     loader.unload();
 
-    qCritical().noquote().nospace() << QSL("Cannot load plugin '")
-                                    << m_pluginLibraryFile
-                                    << QSL("', error is: '")
-                                    << m_lastError
-                                    << QSL("'.");
+    qCriticalNN << QSL("Cannot load plugin '") << m_pluginLibraryFile << QSL("', error is: '") << m_lastError << QSL("'.");
   }
 }
 

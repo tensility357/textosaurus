@@ -2,7 +2,11 @@
 
 #include "saurus/miscellaneous/textapplication.h"
 
-#include "3rd-party/scintilla/include/SciLexer.h"
+// *INDENT-OFF*
+#include PATH(SCINTILLA_DIR,include/SciLexer.h)
+
+// *INDENT-ON*
+
 #include "3rd-party/uchardet/uchardet.h"
 #include "common/gui/messagebox.h"
 #include "common/gui/toolbar.h"
@@ -24,8 +28,8 @@
 #include "saurus/miscellaneous/syntaxhighlighting.h"
 #include "saurus/plugin-system/pluginfactory.h"
 
-#include <QClipboard>
 #include <QDockWidget>
+#include <QDropEvent>
 #include <QFileDialog>
 #include <QIcon>
 #include <QLineEdit>
@@ -57,7 +61,7 @@ void TextApplication::loadTextEditorFromString(const QString& contents) {
   attachTextEditor(new_editor);
   m_tabEditors->setCurrentIndex(addTextEditor(new_editor));
   new_editor->loadFromString(contents);
-  qobject_cast<QWidget*>(new_editor)->setFocus();
+  new_editor->setFocus();
 }
 
 TextEditor* TextApplication::loadTextEditorFromFile(const QString& file_path,
@@ -68,7 +72,7 @@ TextEditor* TextApplication::loadTextEditorFromFile(const QString& file_path,
 
   if (tab_already_opened_file != nullptr) {
     m_tabEditors->setCurrentWidget(tab_already_opened_file);
-    tab_already_opened_file->primaryEditor()->viewport()->setFocus();
+    tab_already_opened_file->primaryEditor()->setFocus();
     return tab_already_opened_file->primaryEditor();
   }
 
@@ -87,7 +91,7 @@ TextEditor* TextApplication::loadTextEditorFromFile(const QString& file_path,
     }
 
     m_tabEditors->setCurrentIndex(addTextEditor(new_editor));
-    qobject_cast<QWidget*>(new_editor)->setFocus();
+    new_editor->setFocus();
   }
 
   return new_editor;
@@ -398,7 +402,7 @@ void TextApplication::createConnections() {
   connect(m_menuEncoding, &QMenu::triggered, this, &TextApplication::changeEncoding);
   connect(m_menuFileSaveWithEncoding, &QMenu::aboutToShow, this, [this]() {
     if (m_menuFileSaveWithEncoding->isEmpty()) {
-      TextFactory::initializeEncodingMenu(m_menuFileSaveWithEncoding);;
+      TextFactory::initializeEncodingMenu(m_menuFileSaveWithEncoding);
     }
   });
   connect(m_menuFileSaveWithEncoding, &QMenu::triggered, this, &TextApplication::saveCurrentEditorAsWithEncoding);
@@ -826,7 +830,7 @@ void TextApplication::reopenTextFile(QAction* action) {
 void TextApplication::openTextFile(QAction* action) {
   QString encoding = (action != nullptr && !action->data().isNull()) ? action->data().toString() : QString();
   QString selected_filter;
-  QString file_path = MessageBox::getOpenFileName(qApp->mainFormWidget(), tr("Open file"),
+  QString file_path = MessageBox::getOpenFileName(qApp->mainFormWidget(), tr("Open File"),
                                                   m_settings->loadSaveDefaultDirectory(),
                                                   m_settings->syntaxHighlighting()->fileFilters(),
                                                   &selected_filter);

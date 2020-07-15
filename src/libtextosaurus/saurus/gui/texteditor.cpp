@@ -20,12 +20,13 @@
 #include "saurus/miscellaneous/textapplication.h"
 #include "saurus/miscellaneous/textapplicationsettings.h"
 
-#include "3rd-party/hoedown/hdocument.h"
-#include "3rd-party/hoedown/html.h"
-#include "3rd-party/scintilla/include/ILoader.h"
-#include "3rd-party/scintilla/include/Platform.h"
-#include "3rd-party/scintilla/include/SciLexer.h"
-#include "3rd-party/scintilla/qt/ScintillaEditBase/PlatQt.h"
+// *INDENT-OFF*
+#include PATH(SCINTILLA_DIR,include/ILoader.h)
+#include PATH(SCINTILLA_DIR,include/Platform.h)
+#include PATH(SCINTILLA_DIR,include/SciLexer.h)
+#include PATH(SCINTILLA_DIR,qt/ScintillaEditBase/PlatQt.h)
+
+// *INDENT-ON*
 
 #include <QDir>
 #include <QElapsedTimer>
@@ -417,6 +418,10 @@ void TextEditor::askForSaveAgreement() {
   }
 }
 
+void TextEditor::setFocus() {
+  qobject_cast<QWidget*>(this)->setFocus();
+}
+
 void TextEditor::requestVisibility() {
   emit visibilityRequested();
 }
@@ -440,7 +445,7 @@ void TextEditor::updateUrlHighlights() {
   sptr_t first_visible_position = positionFromPoint(1, 1);
   int start_position = int(first_visible_position);
 
-  // Firs line visible on screen.
+  // First line visible on screen.
   sptr_t first_visible_line = lineFromPosition(start_position);
   sptr_t ideal_end_position = positionFromLine(first_visible_line + visible_lines_count) +
                               lineLength(first_visible_line + visible_lines_count);
@@ -607,6 +612,7 @@ void TextEditor::reloadLexer(const Lexer& default_lexer) {
   styleClearAll();
 
   color_theme.component(SyntaxColorTheme::StyleComponents::ScintillaMargin).applyToEditor(*this, STYLE_LINENUMBER);
+  color_theme.component(SyntaxColorTheme::StyleComponents::ScintillaControlChar).applyToEditor(*this, STYLE_CONTROLCHAR);
 
   // Set selection colors.
   setSelFore(true, QCOLOR_TO_SPRT(color_theme.component(SyntaxColorTheme::StyleComponents::ScintillaPaper).m_colorBackground));
@@ -668,7 +674,12 @@ void TextEditor::reloadLexer(const Lexer& default_lexer) {
   }
 
   // Setup keywords.
-  setKeyWords(0, m_lexer.m_keywords.toLocal8Bit().constData());
+  QMapIterator<int, QString> i(m_lexer.m_keywords);
+
+  while (i.hasNext()) {
+    i.next();
+    setKeyWords( i.key(), i.value().toLocal8Bit().constData());
+  }
 
   qDebug().noquote() << QSL("Current lexer offers these properties:") << propertyNames();
 
@@ -851,13 +862,22 @@ void TextEditor::setReadOnly(bool read_only) {
 TextEditor* TextEditor::fromTextFile(TextApplication* app, const QString& file_path,
                                      const QString& explicit_encoding, const QString& explicit_filter) {
   try {
-    auto file_data = FileMetadata::obtainRawFileData(file_path);
-    FileMetadata metadata = FileMetadata::getInitialMetadata(file_data.first, file_path, explicit_encoding, explicit_filter);
+
+    QFileInfo nfo(file_path);
+    QString file_target_path = file_path;
+
+    if (nfo.isSymLink() && !nfo.symLinkTarget().isEmpty()) {
+      qWarningNN << QSL("File '") << file_path << QSL("' is symlink with target at '") << nfo.symLinkTarget() << QSL("'.");
+      file_target_path = nfo.symLinkTarget();
+    }
+
+    auto file_data = FileMetadata::obtainRawFileData(file_target_path);
+    FileMetadata metadata = FileMetadata::getInitialMetadata(file_data.first, file_target_path, explicit_encoding, explicit_filter);
 
     if (!metadata.m_encoding.isEmpty()) {
       auto* new_editor = new TextEditor(app, qApp->mainFormWidget());
 
-      new_editor->loadFromFile(file_data.first, file_path, metadata.m_encoding, metadata.m_lexer, metadata.m_eolMode);
+      new_editor->loadFromFile(file_data.first, file_target_path, metadata.m_encoding, metadata.m_lexer, metadata.m_eolMode);
       new_editor->setEncryptionPassword(file_data.second);
       return new_editor;
     }
@@ -866,7 +886,7 @@ TextEditor* TextEditor::fromTextFile(TextApplication* app, const QString& file_p
     }
   }
   catch (const OperationCancelledException&) {
-    qDebug().noquote() << QSL("User cancelled decryption password prompt.");
+    qDebugNN << QSL("User cancelled decryption password prompt.");
     return nullptr;
   }
   catch (const ApplicationException& ex) {

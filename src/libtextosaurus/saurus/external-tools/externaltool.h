@@ -62,7 +62,11 @@ class ExternalTool : public QObject {
 
       // Tool has no output, therefore we do not have to wait for it to exit or handle it
       // in any way.
-      NoOutput
+      NoOutput,
+
+      // Output is inserted at current cursor position
+      // and all selected text is removed before that.
+      InsertAtCursorPositionAndReplaceSelection,
     };
 
     explicit ExternalTool(QObject* parent = nullptr);
@@ -122,7 +126,8 @@ class ExternalTool : public QObject {
 
   signals:
     void partialOutputObtained(QString output);
-    void toolFinished(QPointer<TextEditor>& editor, QString standard_output, QString error_output, bool);
+    void toolFinished(QPointer<TextEditor> editor, QString standard_output,
+                      QString error_output, bool success);
 
   private:
     bool m_isRunning;

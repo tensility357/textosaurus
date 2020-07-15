@@ -10,7 +10,10 @@
 #include "common/miscellaneous/iofactory.h"
 #include "common/miscellaneous/settingsproperties.h"
 
-#include "3rd-party/scintilla/include/Scintilla.h"
+// *INDENT-OFF*
+#include PATH(SCINTILLA_DIR,include/Scintilla.h)
+
+// *INDENT-ON*
 
 #include <QByteArray>
 #include <QColor>
@@ -31,6 +34,8 @@ namespace Editor {
   constexpr auto ID = "editor";
   constexpr auto LogTimestampFormat = "log_timestamp_format";
   constexpr auto LogTimestampFormatDef = "yyyy-MM-dd HH:mm:ss";
+  constexpr auto DateTimeTimestampFormat = "dt_timestamp_format";
+  constexpr auto DateTimeTimestampFormatDef = "yyyy-MM-dd HH:mm:ss";
   constexpr auto TabSize = "tab_size";
   constexpr auto TabSizeDef = 2;
   constexpr auto ColorTheme = "color_theme";
@@ -133,6 +138,10 @@ namespace Browser {
   constexpr auto CustomExternalEmailArguments = "external_email_arguments";
 }
 
+namespace ToolsPromptValues {
+  constexpr auto ID = "external_tools_prompts";
+}
+
 namespace StoredMacros {
   constexpr auto ID = "macros";
 }
@@ -204,11 +213,11 @@ class TEXTOSAURUS_DLLSPEC Settings : public QSettings {
   private:
     explicit Settings(const QString& file_name, Format format, SettingsType type, QObject* parent = nullptr);
 
-    SettingsType m_initializationStatus;
+    SettingsType m_settingsType;
 };
 
 inline SettingsType Settings::type() const {
-  return m_initializationStatus;
+  return m_settingsType;
 }
 
 inline QVariant Settings::value(const QString& section, const QString& key, const QVariant& default_value) const {

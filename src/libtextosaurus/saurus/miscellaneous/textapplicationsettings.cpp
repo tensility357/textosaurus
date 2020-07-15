@@ -53,6 +53,20 @@ int TextApplicationSettings::eolMode() const {
   return qApp->settings()->value(GROUP(Editor), SETTING(Editor::EolMode)).toInt();
 }
 
+QString TextApplicationSettings::eolString() const {
+  switch (eolMode()) {
+    case SC_EOL_CRLF:
+      return QSL("\r\n");
+
+    case SC_EOL_CR:
+      return QSL("\r");
+
+    case SC_EOL_LF:
+    default:
+      return QSL("\n");
+  }
+}
+
 bool TextApplicationSettings::wordWrapEnabled() const {
   return qApp->settings()->value(GROUP(Editor), SETTING(Editor::WordWrap)).toBool();
 }
@@ -95,6 +109,10 @@ bool TextApplicationSettings::reloadModifiedDocumentsAutomatically() const {
 
 QString TextApplicationSettings::logTimestampFormat() const {
   return qApp->settings()->value(GROUP(Editor), SETTING(Editor::LogTimestampFormat)).toString();
+}
+
+QString TextApplicationSettings::dateTimeTimestampFormat() const {
+  return qApp->settings()->value(GROUP(Editor), SETTING(Editor::DateTimeTimestampFormat)).toString();
 }
 
 int TextApplicationSettings::tabSize() const {
@@ -158,6 +176,11 @@ void TextApplicationSettings::setAutoIndentEnabled(bool enabled) {
 
 void TextApplicationSettings::setLogTimestampFormat(const QString& format) {
   qApp->settings()->setValue(GROUP(Editor), Editor::LogTimestampFormat, format);
+  emit settingsChanged(false, false);
+}
+
+void TextApplicationSettings::setDateTimeTimestampFormat(const QString& format) {
+  qApp->settings()->setValue(GROUP(Editor), Editor::DateTimeTimestampFormat, format);
   emit settingsChanged(false, false);
 }
 

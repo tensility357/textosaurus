@@ -55,7 +55,10 @@ bool FormUpdate::isSelfUpdateSupported() {
 }
 
 void FormUpdate::checkForUpdates() {
-  connect(qApp->system(), &SystemFactory::updatesChecked, this, [this](QPair<QList<UpdateInfo>, QNetworkReply::NetworkError> update) {
+  connect(qApp->system(),
+          &SystemFactory::updatesChecked,
+          this,
+          [this](const QPair<QList<UpdateInfo>, QNetworkReply::NetworkError>& update) {
     m_ui.m_buttonBox->setEnabled(true);
     disconnect(qApp->system(), &SystemFactory::updatesChecked, nullptr, nullptr);
 
@@ -84,7 +87,7 @@ void FormUpdate::checkForUpdates() {
         m_btnUpdate->setVisible(true);
         m_ui.m_lblStatus->setStatus(WidgetWithStatus::StatusType::Ok,
                                     tr("New release available."),
-                                    tr("This is new version which can be\ndownloaded."));
+                                    tr("This is a new version which can be\ndownloaded."));
 
         if (self_update_supported) {
           loadAvailableFiles();

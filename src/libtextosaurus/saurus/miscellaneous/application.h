@@ -37,12 +37,12 @@ class TEXTOSAURUS_DLLSPEC Application : public QtSingleApplication {
 
   public:
     explicit Application(const QString& id, int& argc, char** argv);
-    virtual ~Application() = default;
 
     void activateQtSingleMsgProcessing();
 
     bool isRunning();
     bool forcesNewInstance() const;
+    bool forcesNativeDialogs() const;
 
     // Globally accessible actions.
     QList<QAction*> userActions();

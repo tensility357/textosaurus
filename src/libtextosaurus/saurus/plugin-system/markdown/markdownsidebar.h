@@ -5,6 +5,8 @@
 
 #include "saurus/gui/sidebars/basesidebar.h"
 
+#include "3rd-party/md4c/md4c.h"
+
 class TextApplication;
 class MarkdownPlugin;
 class MarkdownTextBrowser;
@@ -21,13 +23,16 @@ class MarkdownSidebar : public BaseSidebar {
     virtual bool initiallyVisible() const override;
     virtual int initialWidth() const override;
 
-  public slots:
-    void refreshPreview();
-
+  protected:
     virtual void load() override;
 
+  private slots:
+    void refreshPreview();
+
   private:
-    QString convertMarkdownToHtml(const uint8_t* raw_utf8_data);
+    QString convertMarkdownToHtml(char* raw_data);
+
+    static void captureHtmlFragment(const MD_CHAR* data, MD_SIZE data_size, void* userData);
 
   private:
     MarkdownTextBrowser* m_txtPreview;

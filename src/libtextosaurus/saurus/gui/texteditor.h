@@ -3,16 +3,20 @@
 #ifndef TEXTEDITOR_H
 #define TEXTEDITOR_H
 
-#include "3rd-party/scintilla/qt/ScintillaEdit/ScintillaEdit.h"
-
 #include "definitions/definitions.h"
+
+// *INDENT-OFF*
+#include PATH(SCINTILLA_DIR,qt/ScintillaEdit/ScintillaEdit.h)
+
+// *INDENT-ON*
+
 #include "saurus/miscellaneous/syntaxhighlighting.h"
 
 #include <QFile>
 #include <QMessageBox>
 
-#define QCOLOR_TO_SPRT(col) ((col.blue()) << 16) | ((col.green()) << 8) | (col.red())
-#define RGB_TO_SPRT(b, g, r) ((r) << 16) | ((g) << 8) | (b)
+#define QCOLOR_TO_SPRT(col) ((((col).blue()) << 16) | (((col).green()) << 8) | ((col).red()))
+#define RGB_TO_SPRT(b, g, r) (((r) << 16) | ((g) << 8) | (b))
 
 class TextApplication;
 class QFileSystemWatcher;
@@ -22,7 +26,6 @@ class TEXTOSAURUS_DLLSPEC TextEditor : public ScintillaEdit {
 
   public:
     explicit TextEditor(TextApplication* text_app, QWidget* parent = nullptr);
-    virtual ~TextEditor() = default;
 
     QString filePath() const;
     Lexer lexer() const;
@@ -54,6 +57,7 @@ class TEXTOSAURUS_DLLSPEC TextEditor : public ScintillaEdit {
     void resetSaveAgreement();
     void askForSaveAgreement();
 
+    void setFocus();
     void requestVisibility();
     void reloadFromDisk();
     void toggleFolding(int position, int modifiers, int margin);

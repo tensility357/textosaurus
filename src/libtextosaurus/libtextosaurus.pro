@@ -119,6 +119,14 @@ HEADERS +=  common/dynamic-shortcuts/dynamicshortcuts.h \
             saurus/miscellaneous/syntaxhighlighting.h \
             saurus/miscellaneous/textapplication.h \
             saurus/miscellaneous/textapplicationsettings.h \
+            saurus/plugin-system/charactermap/charactermap.h \
+            saurus/plugin-system/charactermap/charactermapplugin.h \
+            saurus/plugin-system/charactermap/charactermapsidebar.h \
+            saurus/plugin-system/charactermap/charactermapwidget.h \
+            saurus/plugin-system/clipboard/clipboardimporter.h \
+            saurus/plugin-system/clipboard/clipboardmodel.h \
+            saurus/plugin-system/clipboard/clipboardplugin.h \
+            saurus/plugin-system/clipboard/clipboardsidebar.h \
             saurus/plugin-system/filesystem/favoriteslistwidget.h \
             saurus/plugin-system/filesystem/filesystemmodel.h \
             saurus/plugin-system/filesystem/filesystemplugin.h \
@@ -207,6 +215,14 @@ SOURCES +=  common/dynamic-shortcuts/dynamicshortcuts.cpp \
             saurus/miscellaneous/syntaxhighlighting.cpp \
             saurus/miscellaneous/textapplication.cpp \
             saurus/miscellaneous/textapplicationsettings.cpp \
+            saurus/plugin-system/charactermap/charactermap.cpp \
+            saurus/plugin-system/charactermap/charactermapplugin.cpp \
+            saurus/plugin-system/charactermap/charactermapsidebar.cpp \
+            saurus/plugin-system/charactermap/charactermapwidget.cpp \
+            saurus/plugin-system/clipboard/clipboardimporter.cpp \
+            saurus/plugin-system/clipboard/clipboardmodel.cpp \
+            saurus/plugin-system/clipboard/clipboardplugin.cpp \
+            saurus/plugin-system/clipboard/clipboardsidebar.cpp \
             saurus/plugin-system/filesystem/favoriteslistwidget.cpp \
             saurus/plugin-system/filesystem/filesystemmodel.cpp \
             saurus/plugin-system/filesystem/filesystemplugin.cpp \
@@ -240,6 +256,7 @@ FORMS +=  common/gui/toolbareditor.ui \
           saurus/gui/settings/settingsplugins.ui \
           saurus/gui/settings/settingsshortcuts.ui \
           saurus/gui/settings/syntaxcolorthemeeditor.ui \
+          saurus/plugin-system/clipboard/clipboardimporter.ui \
           saurus/plugin-system/macros/macroswidget.ui \
           saurus/gui/settings/settingsencryption.ui
 
@@ -252,64 +269,75 @@ SOURCES += $$files(3rd-party/uchardet/*.cpp, false)
 HEADERS  += $$files(3rd-party/uchardet/*.h, false)
 
 # Add Scintilla.
+os2 {
+  SCINTILLA_DIR = $$PWD/3rd-party/scintilla-lt
+}
+else {
+  SCINTILLA_DIR = $$PWD/3rd-party/scintilla
+}
+
+DEFINES *= SCINTILLA_DIR=$${SCINTILLA_DIR}/
+message($$MSG_PREFIX: Scintilla subdirectory: \"$$SCINTILLA_DIR\".)
+
 SOURCES += \
-    3rd-party/scintilla/qt/ScintillaEdit/ScintillaEdit.cpp \
-    3rd-party/scintilla/qt/ScintillaEdit/ScintillaDocument.cpp \
-    3rd-party/scintilla/qt/ScintillaEditBase/PlatQt.cpp \
-    3rd-party/scintilla/qt/ScintillaEditBase/ScintillaQt.cpp \
-    3rd-party/scintilla/qt/ScintillaEditBase/ScintillaEditBase.cpp \
-    3rd-party/scintilla/src/XPM.cxx \
-    3rd-party/scintilla/src/ViewStyle.cxx \
-    3rd-party/scintilla/src/UniConversion.cxx \
-    3rd-party/scintilla/src/Style.cxx \
-    3rd-party/scintilla/src/Selection.cxx \
-    3rd-party/scintilla/src/ScintillaBase.cxx \
-    3rd-party/scintilla/src/RunStyles.cxx \
-    3rd-party/scintilla/src/RESearch.cxx \
-    3rd-party/scintilla/src/PositionCache.cxx \
-    3rd-party/scintilla/src/PerLine.cxx \
-    3rd-party/scintilla/src/MarginView.cxx \
-    3rd-party/scintilla/src/LineMarker.cxx \
-    3rd-party/scintilla/src/KeyMap.cxx \
-    3rd-party/scintilla/src/Indicator.cxx \
-    3rd-party/scintilla/src/ExternalLexer.cxx \
-    3rd-party/scintilla/src/EditView.cxx \
-    3rd-party/scintilla/src/Editor.cxx \
-    3rd-party/scintilla/src/EditModel.cxx \
-    3rd-party/scintilla/src/Document.cxx \
-    3rd-party/scintilla/src/Decoration.cxx \
-    3rd-party/scintilla/src/DBCS.cxx \
-    3rd-party/scintilla/src/ContractionState.cxx \
-    3rd-party/scintilla/src/CharClassify.cxx \
-    3rd-party/scintilla/src/CellBuffer.cxx \
-    3rd-party/scintilla/src/Catalogue.cxx \
-    3rd-party/scintilla/src/CaseFolder.cxx \
-    3rd-party/scintilla/src/CaseConvert.cxx \
-    3rd-party/scintilla/src/CallTip.cxx \
-    3rd-party/scintilla/src/AutoComplete.cxx \
-    3rd-party/scintilla/lexlib/WordList.cxx \
-    3rd-party/scintilla/lexlib/StyleContext.cxx \
-    3rd-party/scintilla/lexlib/PropSetSimple.cxx \
-    3rd-party/scintilla/lexlib/LexerSimple.cxx \
-    3rd-party/scintilla/lexlib/LexerNoExceptions.cxx \
-    3rd-party/scintilla/lexlib/LexerModule.cxx \
-    3rd-party/scintilla/lexlib/LexerBase.cxx \
-    3rd-party/scintilla/lexlib/DefaultLexer.cxx \
-    3rd-party/scintilla/lexlib/CharacterSet.cxx \
-    3rd-party/scintilla/lexlib/CharacterCategory.cxx \
-    3rd-party/scintilla/lexlib/Accessor.cxx \
-    $$files(3rd-party/scintilla/lexers/*.cxx, false)
+    $$SCINTILLA_DIR/qt/ScintillaEdit/ScintillaEdit.cpp \
+    $$SCINTILLA_DIR/qt/ScintillaEdit/ScintillaDocument.cpp \
+    $$SCINTILLA_DIR/qt/ScintillaEditBase/PlatQt.cpp \
+    $$SCINTILLA_DIR/qt/ScintillaEditBase/ScintillaQt.cpp \
+    $$SCINTILLA_DIR/qt/ScintillaEditBase/ScintillaEditBase.cpp \
+    $$SCINTILLA_DIR/src/XPM.cxx \
+    $$SCINTILLA_DIR/src/ViewStyle.cxx \
+    $$SCINTILLA_DIR/src/UniqueString.cxx \
+    $$SCINTILLA_DIR/src/UniConversion.cxx \
+    $$SCINTILLA_DIR/src/Style.cxx \
+    $$SCINTILLA_DIR/src/Selection.cxx \
+    $$SCINTILLA_DIR/src/ScintillaBase.cxx \
+    $$SCINTILLA_DIR/src/RunStyles.cxx \
+    $$SCINTILLA_DIR/src/RESearch.cxx \
+    $$SCINTILLA_DIR/src/PositionCache.cxx \
+    $$SCINTILLA_DIR/src/PerLine.cxx \
+    $$SCINTILLA_DIR/src/MarginView.cxx \
+    $$SCINTILLA_DIR/src/LineMarker.cxx \
+    $$SCINTILLA_DIR/src/KeyMap.cxx \
+    $$SCINTILLA_DIR/src/Indicator.cxx \
+    $$SCINTILLA_DIR/src/ExternalLexer.cxx \
+    $$SCINTILLA_DIR/src/EditView.cxx \
+    $$SCINTILLA_DIR/src/Editor.cxx \
+    $$SCINTILLA_DIR/src/EditModel.cxx \
+    $$SCINTILLA_DIR/src/Document.cxx \
+    $$SCINTILLA_DIR/src/Decoration.cxx \
+    $$SCINTILLA_DIR/src/DBCS.cxx \
+    $$SCINTILLA_DIR/src/ContractionState.cxx \
+    $$SCINTILLA_DIR/src/CharClassify.cxx \
+    $$SCINTILLA_DIR/src/CellBuffer.cxx \
+    $$SCINTILLA_DIR/src/Catalogue.cxx \
+    $$SCINTILLA_DIR/src/CaseFolder.cxx \
+    $$SCINTILLA_DIR/src/CaseConvert.cxx \
+    $$SCINTILLA_DIR/src/CallTip.cxx \
+    $$SCINTILLA_DIR/src/AutoComplete.cxx \
+    $$SCINTILLA_DIR/lexlib/WordList.cxx \
+    $$SCINTILLA_DIR/lexlib/StyleContext.cxx \
+    $$SCINTILLA_DIR/lexlib/PropSetSimple.cxx \
+    $$SCINTILLA_DIR/lexlib/LexerSimple.cxx \
+    $$SCINTILLA_DIR/lexlib/LexerNoExceptions.cxx \
+    $$SCINTILLA_DIR/lexlib/LexerModule.cxx \
+    $$SCINTILLA_DIR/lexlib/LexerBase.cxx \
+    $$SCINTILLA_DIR/lexlib/DefaultLexer.cxx \
+    $$SCINTILLA_DIR/lexlib/CharacterSet.cxx \
+    $$SCINTILLA_DIR/lexlib/CharacterCategory.cxx \
+    $$SCINTILLA_DIR/lexlib/Accessor.cxx \
+    $$files($$SCINTILLA_DIR/lexers/*.cxx, false)
 
 HEADERS  += \
-    3rd-party/scintilla/qt/ScintillaEdit/ScintillaEdit.h \
-    3rd-party/scintilla/qt/ScintillaEdit/ScintillaDocument.h \
-    3rd-party/scintilla/qt/ScintillaEditBase/ScintillaEditBase.h \
-    3rd-party/scintilla/qt/ScintillaEditBase/ScintillaQt.h
+    $$SCINTILLA_DIR/qt/ScintillaEdit/ScintillaEdit.h \
+    $$SCINTILLA_DIR/qt/ScintillaEdit/ScintillaDocument.h \
+    $$SCINTILLA_DIR/qt/ScintillaEditBase/ScintillaEditBase.h \
+    $$SCINTILLA_DIR/qt/ScintillaEditBase/ScintillaQt.h
 
-INCLUDEPATH +=  3rd-party/scintilla/qt/ScintillaEditBase \
-                3rd-party/scintilla/include \
-                3rd-party/scintilla/src \
-                3rd-party/scintilla/lexlib
+INCLUDEPATH +=  $$SCINTILLA_DIR/qt/ScintillaEditBase \
+                $$SCINTILLA_DIR/include \
+                $$SCINTILLA_DIR/src \
+                $$SCINTILLA_DIR/lexlib
 
 DEFINES *= SCINTILLA_QT=1 MAKING_LIBRARY=1 SCI_LEXER=1 _CRT_SECURE_NO_DEPRECATE=1
 
@@ -317,9 +345,10 @@ CONFIG(release, debug|release) {
   DEFINES *= NDEBUG=1
 }
 
-# Add hoextdown.
-SOURCES += $$files(3rd-party/hoedown/*.c, false)
-HEADERS  += $$files(3rd-party/hoedown/*.h, false)
+# Add md4c.
+SOURCES += $$files(3rd-party/md4c/*.c, false)
+HEADERS  += $$files(3rd-party/md4c/*.h, false)
+DEFINES *= MD4C_USE_UTF8
 
 INCLUDEPATH +=  $$PWD/. \
                 $$PWD/common/dynamic-shortcuts \
@@ -334,6 +363,7 @@ INCLUDEPATH +=  $$PWD/. \
 # Localizations.
 TRANSLATIONS_WO_QT += $$PWD/../../localization/textosaurus_en.ts \
                       $$PWD/../../localization/textosaurus_cs.ts \
+                      $$PWD/../../localization/textosaurus_de.ts \
                       $$PWD/../../localization/textosaurus_es.ts \
                       $$PWD/../../localization/textosaurus_sk.ts \
                       $$PWD/../../localization/textosaurus_uk_UA.ts \
@@ -341,10 +371,14 @@ TRANSLATIONS_WO_QT += $$PWD/../../localization/textosaurus_en.ts \
 
 TRANSLATIONS += $$TRANSLATIONS_WO_QT \
                 $$PWD/../../localization/qtbase_cs.ts \
+                $$PWD/../../localization/qtbase_de.ts \
                 $$PWD/../../localization/qtbase_es.ts \
                 $$PWD/../../localization/qtbase_sk.ts \
                 $$PWD/../../localization/qtbase_uk_UA.ts \
                 $$PWD/../../localization/qtbase_zh_CN.ts
+
+# Exclude some directories from lupdate.
+TR_EXCLUDE += $(QTDIR) 3rd-party/*
 
 load(uic)
 uic.commands -= -no-stringliteral

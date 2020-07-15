@@ -5,6 +5,8 @@
 #include "common/network-web/networkfactory.h"
 #include "definitions/definitions.h"
 #include "saurus/miscellaneous/application.h"
+#include "saurus/miscellaneous/textapplication.h"
+#include "saurus/miscellaneous/textapplicationsettings.h"
 
 #include <QDateTime>
 #include <QJsonDocument>
@@ -269,29 +271,31 @@ QString PredefinedTools::currentDateTime(const QString& data, bool& ok) {
   Q_UNUSED(data)
   Q_UNUSED(ok)
 
-  return QDateTime::currentDateTime().toString(Qt::DateFormat::ISODate);
+  return QLocale::system().toString(QDateTime::currentDateTime(),
+                                    QLocale::system().dateTimeFormat(QLocale::FormatType::ShortFormat));
 }
 
 QString PredefinedTools::currentDate(const QString& data, bool& ok) {
   Q_UNUSED(data)
   Q_UNUSED(ok)
 
-  return qApp->localization()->loadedLocale().toString(QDateTime::currentDateTime(),
-                                                       qApp->localization()->loadedLocale().dateFormat(QLocale::FormatType::ShortFormat));
+  return QLocale::system().toString(QDateTime::currentDateTime(),
+                                    QLocale::system().dateFormat(QLocale::FormatType::ShortFormat));
 }
 
 QString PredefinedTools::currentTime(const QString& data, bool& ok) {
   Q_UNUSED(data)
   Q_UNUSED(ok)
 
-  return qApp->localization()->loadedLocale().toString(QDateTime::currentDateTime(),
-                                                       qApp->localization()->loadedLocale().timeFormat(QLocale::FormatType::ShortFormat));
+  return QLocale::system().toString(QDateTime::currentDateTime(),
+                                    QLocale::system().timeFormat(QLocale::FormatType::ShortFormat));
 }
 
 QString PredefinedTools::formattedDateTime(const QString& data, bool& ok) {
+  Q_UNUSED(data)
   Q_UNUSED(ok)
 
-  return qApp->localization()->loadedLocale().toString(QDateTime::currentDateTime(), data);
+  return QLocale::system().toString(QDateTime::currentDateTime(), qApp->textApplication()->settings()->dateTimeTimestampFormat());
 }
 
 QString PredefinedTools::toUrlEncoded(const QString& data, bool& ok) {

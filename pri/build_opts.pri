@@ -1,11 +1,18 @@
-CONFIG *= c++1z warn_on
+CONFIG *= warn_on
 CONFIG -=  debug_and_release
 DEFINES *= QT_USE_QSTRINGBUILDER QT_USE_FAST_CONCATENATION QT_USE_FAST_OPERATOR_PLUS UNICODE _UNICODE
 VERSION = $$APP_VERSION
 
+os2 {
+  CONFIG *= c++17
+  QMAKE_CXXFLAGS *= -std=c++17 -D_GLIBCXX_USE_C99
+}
+else {
+  CONFIG *= c++1z
 
-gcc|g++|clang* {
-  QMAKE_CXXFLAGS *= -std=c++17
+  gcc|g++|clang* {
+    QMAKE_CXXFLAGS *= -std=c++17
+  }
 }
 
 msvc {
